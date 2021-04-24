@@ -26,7 +26,7 @@ let persons = [
     }
 ]
 
-const generateId = () => Math.floor((Math.random() * 1000 ))
+const generateId = () => Math.floor((Math.random() * 1000))
 
 app.use(express.json())
 
@@ -60,7 +60,31 @@ app.delete('/api/persons/:id', (req, res) => {
 
 app.post('/api/persons/', (req, res) => {
     const body = req.body
-    
+
+    //Check for missing data in request
+
+    if (!body.name) {
+        return res.status(400).json({
+            error: 'name is missing'
+        })
+    }
+
+    if (!body.number) {
+        return res.status(400).json({
+            error: 'number is missing'
+        })
+    }
+
+    //Check if name already exists
+    const isDuplicated = persons.some(person => person.name === body.name)
+
+    if (isDuplicated) {
+        return res.status(400).json({
+            error: 'name must be unique'
+        })
+    }
+
+    //Add person to collection
     const person = {
         id: generateId(),
         name: body.name,
@@ -69,7 +93,10 @@ app.post('/api/persons/', (req, res) => {
 
     persons = persons.concat(person)
 
-    res.json(person)
+    res.json({
+        success: 'new contact added',
+        contact: person
+    })
 })
 
 app.listen(PORT, () => {
