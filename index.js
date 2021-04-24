@@ -41,7 +41,11 @@ app.get('/api/persons', (req, res) => {
     res.json(persons)
 })
 
-
+app.get('/api/persons/:id', (req, res) => {
+    const id = req.params.id
+    const person = persons.find(person => person.id === Number(id))
+    person ? res.json(person) : res.status(404).send(`Resource doesn't exist`)
+})
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
