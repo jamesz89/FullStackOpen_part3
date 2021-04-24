@@ -42,9 +42,15 @@ app.get('/api/persons', (req, res) => {
 })
 
 app.get('/api/persons/:id', (req, res) => {
-    const id = req.params.id
-    const person = persons.find(person => person.id === Number(id))
-    person ? res.json(person) : res.status(404).send(`Resource doesn't exist`)
+    const id = Number(req.params.id)
+    const person = persons.find(person => person.id === id)
+    person ? res.json(person) : res.status(404).end()
+})
+
+app.delete('/api/persons/:id', (req, res) => {
+    const id = Number(req.params.id)
+    persons = persons.filter(person => person.id !== id)
+    res.status(204).end()
 })
 
 app.listen(PORT, () => {
