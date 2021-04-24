@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const PORT = 3001
 
+
 let persons = [
     {
         id: 1,
@@ -24,6 +25,10 @@ let persons = [
         number: '39-23-6423122'
     }
 ]
+
+const generateId = () => Math.floor((Math.random() * 1000 ))
+
+app.use(express.json())
 
 app.get('/', (req, res) => {
     res.send('<h1>Welcome to the Phonebook</h1>')
@@ -51,6 +56,20 @@ app.delete('/api/persons/:id', (req, res) => {
     const id = Number(req.params.id)
     persons = persons.filter(person => person.id !== id)
     res.status(204).end()
+})
+
+app.post('/api/persons/', (req, res) => {
+    const body = req.body
+    
+    const person = {
+        id: generateId(),
+        name: body.name,
+        number: body.number
+    }
+
+    persons = persons.concat(person)
+
+    res.json(person)
 })
 
 app.listen(PORT, () => {
