@@ -27,10 +27,12 @@ let persons = [
     }
 ]
 
+//Morgan custom body token
+morgan.token('body', (req, res) => JSON.stringify(req.body))
 
 //Generate middleware: body-parser, logger
 app.use(express.json())
-app.use(morgan('tiny'))
+app.use(morgan(':method :url :status :response-time ms - :body'))
 
 app.get('/', (req, res) => {
     res.send('<h1>Welcome to the Phonebook</h1>')
