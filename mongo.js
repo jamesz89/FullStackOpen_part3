@@ -9,9 +9,6 @@ const password = process.argv[2]
 const name = process.argv[3]
 const number = process.argv[4]
 
-console.log(password, name, number)
-
-
 const url = `mongodb+srv://fullstackopen:${password}@cluster0.ro5o3.mongodb.net/phonebook?retryWrites=true&w=majority`
 
 mongoose.connect(url, {
@@ -47,6 +44,3 @@ if (!name || !number) {
         mongoose.connection.close()
     })  
 }
-
-
-
