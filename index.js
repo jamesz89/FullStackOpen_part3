@@ -18,7 +18,7 @@ app.use(morgan(':method :url :status :response-time ms - :body'))
 const errorHandler = (err, req, res, next) => {
     console.log(err.message)
     if (err.name === 'CastError') {
-        return res.status(400).send({error: 'malformatted id'})
+        return res.status(400).send({ error: 'malformatted id' })
     }
     next(err)
 }
@@ -51,19 +51,19 @@ app.get('/api/persons/:id', (req, res, next) => {
             res.status(404).end()
         }
     })
-    .catch(err => {
-        next(err)
-    })
+        .catch(err => {
+            next(err)
+        })
 })
 
 app.delete('/api/persons/:id', (req, res, next) => {
     Person.findByIdAndRemove(req.params.id)
-    .then(result => {
-        res.status(204).end()
-    })
-    .catch(err => {
-        next(err)
-    })
+        .then(result => {
+            res.status(204).end()
+        })
+        .catch(err => {
+            next(err)
+        })
 })
 
 app.post('/api/persons/', (req, res) => {
