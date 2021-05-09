@@ -10,10 +10,20 @@ const app = express()
 morgan.token('body', (req, res) => JSON.stringify(req.body))
 
 //Generate middleware
+app.use(express.static('build'))
 app.use(express.json())
 app.use(cors())
-app.use(express.static('build'))
 app.use(morgan(':method :url :status :response-time ms - :body'))
+
+const errorHandler = (err, req, res, next) => {
+    console.log(err.message)
+    if (err.name === 'CastError') {
+        return res.status(400).send({error: 'malformatted id'})
+    }
+    next(err)
+}
+
+app.use(errorHandler)
 
 //Routes
 app.get('/', (req, res) => {
@@ -33,16 +43,27 @@ app.get('/api/persons', (req, res) => {
     })
 })
 
-app.get('/api/persons/:id', (req, res) => {
+app.get('/api/persons/:id', (req, res, next) => {
     Person.findById(req.params.id).then(person => {
-        res.json(person)
+        if (person) {
+            res.json(person)
+        } else {
+            res.status(404).end()
+        }
+    })
+    .catch(err => {
+        next(err)
     })
 })
 
-app.delete('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    persons = persons.filter(person => person.id !== id)
-    res.status(204).end()
+app.delete('/api/persons/:id', (req, res, next) => {
+    Person.findByIdAndRemove(req.params.id)
+    .then(result => {
+        res.status(204).end()
+    })
+    .catch(err => {
+        next(err)
+    })
 })
 
 app.post('/api/persons/', (req, res) => {
