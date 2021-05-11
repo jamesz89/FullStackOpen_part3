@@ -16,9 +16,10 @@ app.use(cors())
 app.use(morgan(':method :url :status :response-time ms - :body'))
 
 const errorHandler = (err, req, res, next) => {
-    console.log(err.message)
     if (err.name === 'CastError') {
         return res.status(400).send({ error: 'malformatted id' })
+    }else if (err.name === 'ValidationError') {
+        return res.status(400).send({ error: 'name must be unique' })
     }
     next(err)
 }
@@ -83,22 +84,8 @@ app.delete('/api/persons/:id', (req, res, next) => {
         })
 })
 
-app.post('/api/persons/', (req, res) => {
+app.post('/api/persons/', (req, res, next) => {
     const body = req.body
-
-    //Check for missing data in request
-
-    if (!body.name) {
-        return res.status(400).json({
-            error: 'name is missing'
-        })
-    }
-
-    if (!body.number) {
-        return res.status(400).json({
-            error: 'number is missing'
-        })
-    }
 
     const person = new Person({
         name: body.name,
@@ -108,6 +95,7 @@ app.post('/api/persons/', (req, res) => {
     person.save().then(savedPerson => {
         res.json(savedPerson)
     })
+        .catch(err => next(err))
 })
 
 const PORT = process.env.PORT || 3001
