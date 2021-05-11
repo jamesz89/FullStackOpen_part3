@@ -31,10 +31,12 @@ app.get('/', (req, res) => {
 })
 
 app.get('/info', (req, res) => {
-    res.send(`
-    <p>Phonebook has info for ${persons.length} people</p>
-    <p>${Date()}</p>
-    `)
+    Person.estimatedDocumentCount({}, (err, count) => {
+        res.send(`
+        <p>Phonebook has info for ${count} people</p>
+        <p>${Date()}</p>
+        `)
+    })
 })
 
 app.get('/api/persons', (req, res) => {
@@ -54,6 +56,21 @@ app.get('/api/persons/:id', (req, res, next) => {
         .catch(err => {
             next(err)
         })
+})
+
+app.put('/api/persons/:id', (req, res, next) => {
+    const body = req.body
+
+    const person = {
+        name: body.name,
+        number: body.number
+    }
+
+    Person.findByIdAndUpdate(req.params.id, person, { new: true })
+        .then(updatedPerson => {
+            res.json(updatedPerson)
+        })
+        .catch(err => next(err))
 })
 
 app.delete('/api/persons/:id', (req, res, next) => {
