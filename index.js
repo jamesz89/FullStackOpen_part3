@@ -1,30 +1,19 @@
-require('dotenv').config()
 const express = require('express')
+require('dotenv').config()
 const morgan = require('morgan')
 const cors = require('cors')
 const Person = require('./models/person')
 
 const app = express()
-
-//Morgan custom body token
-morgan.token('body', (req, res) => JSON.stringify(req.body))
-
-//Generate middleware
+app.use(cors())
 app.use(express.static('build'))
 app.use(express.json())
-app.use(cors())
+
+//Set morgan custom body token
+morgan.token('body', (req, res) => JSON.stringify(req.body))
+
 app.use(morgan(':method :url :status :response-time ms - :body'))
 
-const errorHandler = (err, req, res, next) => {
-    if (err.name === 'CastError') {
-        return res.status(400).send({ error: 'malformatted id' })
-    }else if (err.name === 'ValidationError') {
-        return res.status(400).send({ error: 'name must be unique' })
-    }
-    next(err)
-}
-
-app.use(errorHandler)
 
 //Routes
 app.get('/', (req, res) => {
@@ -32,7 +21,7 @@ app.get('/', (req, res) => {
 })
 
 app.get('/info', (req, res) => {
-    Person.estimatedDocumentCount({}, (err, count) => {
+    Person.estimatedDocumentCount({}, (error, count) => {
         res.send(`
         <p>Phonebook has info for ${count} people</p>
         <p>${Date()}</p>
@@ -54,49 +43,61 @@ app.get('/api/persons/:id', (req, res, next) => {
             res.status(404).end()
         }
     })
-        .catch(err => {
-            next(err)
-        })
+    .catch(error => {
+        next(error)
+    })
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
     const body = req.body
-
+    
     const person = {
         name: body.name,
         number: body.number
     }
-
+    
     Person.findByIdAndUpdate(req.params.id, person, { new: true })
-        .then(updatedPerson => {
-            res.json(updatedPerson)
-        })
-        .catch(err => next(err))
+    .then(updatedPerson => {
+        res.json(updatedPerson)
+    })
+    .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (req, res, next) => {
     Person.findByIdAndRemove(req.params.id)
-        .then(result => {
-            res.status(204).end()
-        })
-        .catch(err => {
-            next(err)
-        })
+    .then(result => {
+        res.status(204).end()
+    })
+    .catch(error => {
+        next(error)
+    })
 })
 
 app.post('/api/persons/', (req, res, next) => {
     const body = req.body
-
+    
     const person = new Person({
         name: body.name,
         number: body.number
     })
-
-    person.save().then(savedPerson => {
-        res.json(savedPerson)
-    })
-        .catch(err => next(err))
+    
+    person.save()
+    .then(savedPerson => res.json(savedPerson))
+    .catch(error => next(error))
 })
+
+//Error handling
+const errorHandler = (error, req, res, next) => {
+    console.log(error)
+    
+    if (error.name === 'CastError') {
+        return res.status(400).send({ error: 'malformatted id' })
+    }
+    if (error.name === 'ValidationError') {
+        return res.status(409).send({ error: 'name must be unique' })
+    }
+}
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {

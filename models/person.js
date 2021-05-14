@@ -10,15 +10,13 @@ mongoose.connect(url, {
     useUnifiedTopology: true,
     useFindAndModify: false,
     useCreateIndex: true
-}).then(result => {
-    console.log('Connected to MongoDB')
-}).catch(err => {
-    console.log('Error connecting to MongoDB:', err.message)
 })
+.then(result => console.log('Connected to MongoDB'))
+.catch(error => console.log('Error connecting to MongoDB:', error.message))
 
 const personSchema = new mongoose.Schema({
-    name: { type: String, required: true, unique: true },
-    number: { type: String, required: true }
+    name: { type: String, required: true, unique: true, minlength: 4 },
+    number: { type: String, required: true, minlength: 8 }
 })
 
 personSchema.plugin(uniqueValidator)
