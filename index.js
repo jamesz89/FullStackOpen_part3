@@ -3,15 +3,26 @@ require('dotenv').config()
 const morgan = require('morgan')
 const cors = require('cors')
 const Person = require('./models/person')
-
 const app = express()
-app.use(cors())
-app.use(express.static('build'))
-app.use(express.json())
 
 //Set morgan custom body token
 morgan.token('body', (req, res) => JSON.stringify(req.body))
 
+//Error handling
+const errorHandler = (error, req, res, next) => {
+    console.log('Error handler caught something')
+    
+    if (error.name === 'CastError') {
+        return res.status(400).send({ error: 'malformatted id' })
+    }
+    if (error.name === 'ValidationError') {
+        return res.status(409).send({ error: error})
+    }
+}
+
+app.use(cors())
+app.use(express.static('build'))
+app.use(express.json())
 app.use(morgan(':method :url :status :response-time ms - :body'))
 
 
@@ -86,17 +97,6 @@ app.post('/api/persons/', (req, res, next) => {
     .catch(error => next(error))
 })
 
-//Error handling
-const errorHandler = (error, req, res, next) => {
-    console.log(error)
-    
-    if (error.name === 'CastError') {
-        return res.status(400).send({ error: 'malformatted id' })
-    }
-    if (error.name === 'ValidationError') {
-        return res.status(409).send({ error: 'name must be unique' })
-    }
-}
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
